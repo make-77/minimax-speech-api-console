@@ -1,0 +1,9 @@
+{
+  "name": "minimax-speech-api-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MiniMax speech API local request console",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}

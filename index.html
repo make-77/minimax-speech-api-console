@@ -1,0 +1,2111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniMax 语音 API 请求工作台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #16201c;
+      --muted: #61716a;
+      --soft: #f5f4ef;
+      --paper: #fbfaf7;
+      --panel: #ffffff;
+      --line: #dde2dc;
+      --green: #167461;
+      --teal: #0f7f92;
+      --blue: #315f9f;
+      --amber: #a86612;
+      --red: #b5443a;
+      --shadow: 0 16px 44px rgba(22, 32, 28, 0.08);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(251, 250, 247, 0.96);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 250px;
+    }
+
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--paper);
+      font-weight: 800;
+    }
+
+    .brand strong {
+      display: block;
+      line-height: 1.15;
+      font-size: 17px;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .global-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 330px) minmax(220px, 380px) auto;
+      gap: 10px;
+      align-items: end;
+      flex: 1;
+      max-width: 920px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      min-height: 38px;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 98px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(22, 116, 97, 0.12);
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 38px;
+      white-space: nowrap;
+    }
+
+    .toggle-row input {
+      width: 16px;
+      height: 16px;
+      min-height: 16px;
+    }
+
+    .layout {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 232px minmax(0, 1fr);
+      gap: 22px;
+      padding: 22px 24px 48px;
+    }
+
+    aside {
+      position: sticky;
+      top: 88px;
+      height: calc(100vh - 112px);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .side-title {
+      margin: 4px 8px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav a {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 9px;
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .nav a:hover {
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .nav code {
+      color: var(--blue);
+      font-size: 11px;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(22, 116, 97, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, rgba(22, 116, 97, 0.07) 0 1px, transparent 1px 100%),
+        var(--panel);
+      background-size: 36px 36px;
+      padding: clamp(20px, 4vw, 36px);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-weight: 800;
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      line-height: 1.08;
+      font-size: clamp(32px, 4vw, 52px);
+      letter-spacing: 0;
+    }
+
+    .hero p:last-child {
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 16px;
+      margin: 14px 0 0;
+    }
+
+    .notice {
+      margin-top: 14px;
+      border: 1px solid rgba(168, 102, 18, 0.28);
+      border-radius: var(--radius);
+      background: rgba(168, 102, 18, 0.08);
+      padding: 12px 14px;
+      color: #6b430d;
+      font-size: 14px;
+    }
+
+    .quick-start {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .quick-step,
+    .guide {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.86);
+      padding: 12px;
+    }
+
+    .quick-step b {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--paper);
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .quick-step strong,
+    .guide h3 {
+      display: block;
+      margin: 0 0 6px;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .quick-step span,
+    .guide p,
+    .guide li {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .quick-step span {
+      display: block;
+    }
+
+    .guide {
+      margin-bottom: 14px;
+      background: #f8f7f1;
+    }
+
+    .guide p {
+      margin: 0;
+    }
+
+    .guide ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .guide li + li {
+      margin-top: 4px;
+    }
+
+    .param-help {
+      margin: 0 0 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .param-help summary {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 800;
+      background: #f2f1eb;
+    }
+
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .param-table th,
+    .param-table td {
+      padding: 9px 10px;
+      border-top: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .param-table th {
+      width: 24%;
+      color: var(--muted);
+      background: #faf9f4;
+      font-weight: 800;
+    }
+
+    .param-table td {
+      color: var(--muted);
+    }
+
+    .param-table code {
+      color: var(--blue);
+      font-size: 12px;
+    }
+
+    .api-section {
+      margin-top: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f2f1eb;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .section-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 780px;
+    }
+
+    .method {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: var(--ink);
+      color: var(--paper);
+      font: 700 12px Consolas, "Courier New", monospace;
+    }
+
+    .method.get { background: var(--blue); }
+    .method.post { background: var(--green); }
+    .method.ws { background: var(--teal); }
+    .method.delete { background: var(--red); }
+
+    .api-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.82fr);
+      gap: 0;
+      align-items: start;
+    }
+
+    .form-panel {
+      padding: 18px;
+      border-right: 1px solid var(--line);
+      align-self: stretch;
+    }
+
+    .result-panel {
+      padding: 18px;
+      background: #faf9f4;
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 180px minmax(0, 1fr) auto;
+      align-content: stretch;
+      min-height: 0;
+      max-height: none;
+      overflow: hidden;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      min-height: 38px;
+    }
+
+    .checks label {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .checks input {
+      width: 16px;
+      height: 16px;
+      min-height: 16px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .btn {
+      min-height: 38px;
+      border: 1px solid var(--ink);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      background: var(--ink);
+      color: var(--paper);
+      font-weight: 800;
+      font-size: 14px;
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(22, 32, 28, 0.14);
+    }
+
+    .btn.secondary:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .btn.warn:hover {
+      border-color: #93352e;
+      background: #93352e;
+      color: var(--paper);
+    }
+
+    .btn:active,
+    .btn.is-pressed {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .btn.warn {
+      border-color: var(--red);
+      background: var(--red);
+    }
+
+    .btn:disabled {
+      opacity: 0.52;
+      cursor: not-allowed;
+    }
+
+    .btn.is-loading {
+      pointer-events: none;
+    }
+
+    .btn.is-loading::after {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-left: 8px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 999px;
+      vertical-align: -2px;
+      animation: spin 700ms linear infinite;
+    }
+
+    .btn:focus-visible,
+    .nav a:focus-visible {
+      outline: 3px solid rgba(22, 116, 97, 0.24);
+      outline-offset: 2px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .endpoint {
+      display: block;
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    pre {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #111a17;
+      color: #e8f0ea;
+      min-height: 172px;
+      max-height: 360px;
+      overflow: auto;
+      padding: 12px;
+      font: 12px/1.45 Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      min-height: 0;
+    }
+
+    .result {
+      margin-top: 12px;
+      min-height: 0;
+    }
+
+    .result-panel pre {
+      max-height: none;
+    }
+
+    .result-panel .result {
+      min-height: 0;
+    }
+
+    .form-panel label {
+      align-self: start;
+    }
+
+    .form-panel input,
+    .form-panel select {
+      align-self: start;
+    }
+
+    .audio-box {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    audio {
+      width: 100%;
+    }
+
+    .hint {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ok {
+      color: var(--green);
+    }
+
+    .err {
+      color: var(--red);
+    }
+
+    .curl {
+      margin-top: 10px;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 20px;
+      padding: 14px 2px 0;
+    }
+
+    @media (max-width: 1080px) {
+      .topbar,
+      .layout {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .topbar {
+        display: grid;
+      }
+
+      .global-controls {
+        grid-template-columns: 1fr 1fr;
+        max-width: none;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .api-body {
+        grid-template-columns: 1fr;
+      }
+
+      .form-panel {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .result-panel {
+        display: block;
+      }
+
+      .result-panel pre {
+        max-height: 360px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .global-controls,
+      .grid,
+      .grid.three,
+      .nav,
+      .quick-start {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: grid;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark">M</div>
+        <div>
+          <strong>MiniMax 语音 API 请求工作台</strong>
+          <span>HTTP 接口可直接发起请求，WebSocket 提供浏览器限制说明和消息生成</span>
+        </div>
+      </div>
+      <div class="global-controls">
+        <label>API Base
+          <select id="apiBase">
+            <option value="https://api.minimaxi.com">https://api.minimaxi.com</option>
+            <option value="https://api-bj.minimaxi.com">https://api-bj.minimaxi.com</option>
+            <option value="">自定义，填写完整 URL 前缀</option>
+          </select>
+        </label>
+        <label>自定义 Base URL
+          <input id="customBase" placeholder="例如 http://127.0.0.1:8787">
+        </label>
+        <label>API Key
+          <input id="apiKey" type="password" placeholder="Bearer Token，不要填入网页源码">
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div class="side-title">语音 API</div>
+      <nav class="nav" aria-label="API 导航">
+        <a href="#t2a-http"><span>同步语音合成</span><code>POST</code></a>
+        <a href="#t2a-ws"><span>WebSocket 合成</span><code>WS</code></a>
+        <a href="#async-create"><span>异步合成创建</span><code>POST</code></a>
+        <a href="#async-query"><span>异步任务查询</span><code>GET</code></a>
+        <a href="#file-upload"><span>上传文件</span><code>POST</code></a>
+        <a href="#file-tools"><span>文件查询下载</span><code>GET</code></a>
+        <a href="#voice-clone"><span>音色快速复刻</span><code>POST</code></a>
+        <a href="#voice-design"><span>音色设计</span><code>POST</code></a>
+        <a href="#voice-list"><span>查询可用音色</span><code>POST</code></a>
+        <a href="#voice-delete"><span>删除音色</span><code>POST</code></a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Speech API Console</p>
+        <h1>把 MiniMax 语音 API 放进网页里请求</h1>
+        <p>填写全局 API Key 后，每个模块会按 MiniMax 文档构造请求体、发起请求、展示响应，并生成可复制的 curl。语音二进制字段如果以 hex 返回，页面会尝试转换为音频播放和下载。</p>
+        <div class="notice">
+          注意：纯前端页面会把 API Key 暴露在浏览器运行时，只适合本机调试。若 MiniMax 接口未开放浏览器 CORS，需要用自己的后端或本地代理转发请求；页面仍会显示完整 curl 方便复现。
+        </div>
+        <div class="quick-start" aria-label="使用步骤">
+          <div class="quick-step">
+            <b>1</b>
+            <strong>填写鉴权</strong>
+            <span>在顶部填 API Base 和 API Key。Key 只保存在当前浏览器会话中。</span>
+          </div>
+          <div class="quick-step">
+            <b>2</b>
+            <strong>选择接口</strong>
+            <span>左侧按语音合成、文件、音色三个流程组织，可直接跳到目标接口。</span>
+          </div>
+          <div class="quick-step">
+            <b>3</b>
+            <strong>检查预览</strong>
+            <span>表单变更会实时刷新请求 JSON、URL 和 curl 参数，发送前先确认字段。</span>
+          </div>
+          <div class="quick-step">
+            <b>4</b>
+            <strong>查看结果</strong>
+            <span>响应区显示原始返回；音频字段会尽量转成播放器和下载按钮。</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="t2a-http" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>同步语音合成 HTTP</h2>
+            <p>短文本直接生成音频。常用 endpoint：<code>/v1/t2a_v2</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>用于短文本即时生成语音，适合按钮试听、实时播报、对话式回复。</p>
+              <ul>
+                <li><code>voice_id</code> 可填系统音色、音色复刻结果或音色设计结果。</li>
+                <li>返回的音频通常在响应 JSON 的音频字段中，页面会尝试把 hex 音频转成播放器。</li>
+                <li>如果浏览器提示 CORS，点击“复制 curl”到终端测试，或把 API Base 改成本地代理地址。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>model</th><td><code>speech-2.8-turbo</code> 偏速度和实时性；<code>speech-2.8-hd</code> 偏音质和表现力；<code>speech-2.6-*</code> 可作为兼容选择；<code>speech-02-*</code> 适合仍在使用 02 系列的项目。</td></tr>
+                <tr><th>voice_id</th><td>填系统音色 ID、复刻音色 ID 或音色设计 ID。默认示例 <code>male-qn-qingse</code> 仅用于快速试跑。</td></tr>
+                <tr><th>text</th><td>要合成的文本。同步接口适合短文本，过长内容建议改用异步合成。</td></tr>
+                <tr><th>speed / vol / pitch</th><td><code>speed</code> 控制语速，<code>vol</code> 控制音量，<code>pitch</code> 控制音高；默认值分别是 <code>1</code>、<code>1</code>、<code>0</code>。</td></tr>
+                <tr><th>emotion</th><td>为空表示不指定情绪；可选 <code>happy</code>、<code>sad</code>、<code>angry</code>、<code>fearful</code>、<code>disgusted</code>、<code>surprised</code>、<code>neutral</code>。</td></tr>
+                <tr><th>format</th><td><code>mp3</code> 体积小、兼容好；<code>wav</code> 便于后期处理；<code>pcm</code> 适合底层音频管线。</td></tr>
+                <tr><th>sample_rate / bitrate / channel</th><td>采样率和码率越高音质越好、文件越大；<code>channel=1</code> 为单声道，<code>2</code> 为双声道。</td></tr>
+                <tr><th>language_boost</th><td>用于增强指定语言识别和发音表现。中文可填 <code>Chinese</code>，英文可填 <code>English</code>，不确定可尝试 <code>auto</code> 或留空。</td></tr>
+                <tr><th>subtitle / stream / timestamp</th><td><code>subtitle_enable</code> 请求字幕；<code>stream</code> 请求流式返回；<code>timestamp_enable</code> 请求时间戳信息。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>model
+                <select id="t2aModel">
+                  <option>speech-2.8-hd</option>
+                  <option selected>speech-2.8-turbo</option>
+                  <option>speech-2.6-hd</option>
+                  <option>speech-2.6-turbo</option>
+                  <option>speech-02-hd</option>
+                  <option>speech-02-turbo</option>
+                </select>
+              </label>
+              <label>voice_id
+                <input id="t2aVoice" value="male-qn-qingse" placeholder="系统音色或自定义 Voice ID">
+              </label>
+              <label class="full">text
+                <textarea id="t2aText">欢迎使用 MiniMax 语音 API 请求工作台。</textarea>
+              </label>
+            </div>
+            <div class="grid three">
+              <label>speed
+                <input id="t2aSpeed" type="number" step="0.1" value="1">
+              </label>
+              <label>vol
+                <input id="t2aVol" type="number" step="0.1" value="1">
+              </label>
+              <label>pitch
+                <input id="t2aPitch" type="number" step="1" value="0">
+              </label>
+              <label>emotion
+                <select id="t2aEmotion">
+                  <option value="">不设置</option>
+                  <option>happy</option>
+                  <option>sad</option>
+                  <option>angry</option>
+                  <option>fearful</option>
+                  <option>disgusted</option>
+                  <option>surprised</option>
+                  <option>neutral</option>
+                </select>
+              </label>
+              <label>format
+                <select id="t2aFormat">
+                  <option selected>mp3</option>
+                  <option>wav</option>
+                  <option>pcm</option>
+                </select>
+              </label>
+              <label>sample_rate
+                <select id="t2aSampleRate">
+                  <option>8000</option>
+                  <option>16000</option>
+                  <option>22050</option>
+                  <option>24000</option>
+                  <option>32000</option>
+                  <option selected>44100</option>
+                </select>
+              </label>
+              <label>bitrate
+                <select id="t2aBitrate">
+                  <option>32000</option>
+                  <option>64000</option>
+                  <option selected>128000</option>
+                  <option>256000</option>
+                </select>
+              </label>
+              <label>channel
+                <select id="t2aChannel">
+                  <option selected>1</option>
+                  <option>2</option>
+                </select>
+              </label>
+              <label>language_boost
+                <input id="t2aLang" value="Chinese" placeholder="Chinese / English / auto">
+              </label>
+            </div>
+            <div class="checks">
+              <label><input id="t2aSubtitle" type="checkbox"> subtitle_enable</label>
+              <label><input id="t2aStream" type="checkbox"> stream</label>
+              <label><input id="t2aIncludeTimestamp" type="checkbox"> include timestamp</label>
+            </div>
+            <div class="actions">
+              <button class="btn" data-run="t2aHttp">发送请求</button>
+              <button class="btn secondary" data-copy="t2aHttp">复制 curl</button>
+              <button class="btn secondary" data-preview="t2aHttp">刷新 JSON</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="t2aHttp"></code>
+            <pre id="t2aHttpPreview"></pre>
+            <pre id="t2aHttpResult" class="result">等待请求...</pre>
+            <div id="t2aHttpAudio" class="audio-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="t2a-ws" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>同步语音合成 WebSocket</h2>
+            <p>MiniMax WebSocket 文档要求握手时携带 Authorization 请求头；浏览器原生 WebSocket 不能设置自定义请求头，所以这里生成 start / continue / finish 消息和 curl 示例。实际网页直连需要你自己的 WS 代理注入鉴权头。</p>
+          </div>
+          <span class="method ws">WS</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>用于流式语音合成，适合边生成边播放的实时体验。</p>
+              <ul>
+                <li>浏览器原生 WebSocket 不能设置 <code>Authorization</code> 请求头，所以本页只生成消息和命令。</li>
+                <li>真实网页接入时建议加一个后端 WS 代理，由代理把鉴权头转发给 MiniMax。</li>
+                <li>消息顺序一般是开始任务、连续发送文本、结束任务，再按返回包拼接音频。</li>
+              </ul>
+            </div>
+            <details class="param-help">
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>WebSocket URL</th><td>默认 <code>wss://api.minimaxi.com/ws/v1/t2a_v2</code>。如果你有自己的代理，填代理的 WS 地址。</td></tr>
+                <tr><th>model</th><td>实时播放优先选 <code>speech-2.8-turbo</code>；更重视音质可选 <code>speech-2.8-hd</code>。</td></tr>
+                <tr><th>voice_id</th><td>与 HTTP 合成一致，填系统音色、复刻音色或设计音色的 ID。</td></tr>
+                <tr><th>format</th><td><code>mp3</code> 适合浏览器播放；<code>wav</code> 适合后处理；<code>pcm</code> 适合自定义播放器或底层音频流。</td></tr>
+                <tr><th>text</th><td>页面生成 <code>task_continue</code> 消息中的文本。真实流式场景可以分段发送多条文本。</td></tr>
+                <tr><th>Authorization</th><td>MiniMax 需要握手请求头；浏览器不能直接设置，需由后端代理补上 <code>Bearer API_KEY</code>。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>WebSocket URL
+                <input id="wsUrl" value="wss://api.minimaxi.com/ws/v1/t2a_v2">
+              </label>
+              <label>model
+                <select id="wsModel">
+                  <option>speech-2.8-hd</option>
+                  <option selected>speech-2.8-turbo</option>
+                  <option>speech-2.6-hd</option>
+                  <option>speech-2.6-turbo</option>
+                </select>
+              </label>
+              <label>voice_id
+                <input id="wsVoice" value="male-qn-qingse">
+              </label>
+              <label>format
+                <select id="wsFormat">
+                  <option selected>mp3</option>
+                  <option>wav</option>
+                  <option>pcm</option>
+                </select>
+              </label>
+              <label class="full">text
+                <textarea id="wsText">这是 WebSocket 流式合成的文本。</textarea>
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn secondary" data-preview="ws">生成消息</button>
+              <button class="btn secondary" data-copy="ws">复制 wscat 命令</button>
+            </div>
+            <p class="hint">如果接入自己的代理，可让代理接收浏览器 WS 后转发到 MiniMax，并在转发握手中添加 <code>Authorization: Bearer API_KEY</code>。</p>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="ws"></code>
+            <pre id="wsPreview"></pre>
+            <pre id="wsResult" class="result">浏览器原生 WebSocket 无法设置 Authorization 请求头，未直接连接。</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="async-create" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>异步长文本语音合成：创建任务</h2>
+            <p>适合长文本、批量有声内容。endpoint：<code>/v1/t2a_async_v2</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>用于长文本后台合成，适合课程、有声书、批量旁白等不需要立即返回音频的任务。</p>
+              <ul>
+                <li>短长文本可直接填 <code>text</code>；更长内容先用上传文件接口上传 <code>t2a_async_input</code>，再填 <code>text_file_id</code>。</li>
+                <li>创建成功后复制或自动带出的 <code>task_id</code>，到“异步任务查询”里轮询状态。</li>
+                <li>查询结果里若出现输出文件 ID，再到“文件查询与下载”下载音频。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>model</th><td>长文本批量任务一般选 <code>speech-2.8-turbo</code> 控制速度和成本；精品内容可选 <code>speech-2.8-hd</code>。</td></tr>
+                <tr><th>voice_id</th><td>目标音色 ID，和同步合成相同。复刻或设计完成后可把返回 ID 填到这里。</td></tr>
+                <tr><th>text</th><td>直接提交的长文本。若同时填写 <code>text_file_id</code>，页面会优先使用文件 ID 并移除 text。</td></tr>
+                <tr><th>text_file_id</th><td>通过文件上传接口以 <code>purpose=t2a_async_input</code> 上传文本后得到的文件 ID。</td></tr>
+                <tr><th>format</th><td><code>mp3</code> 适合分发和在线播放；<code>wav</code> 适合剪辑或后期处理。</td></tr>
+                <tr><th>speed / vol / pitch</th><td>与同步合成一致，用于控制整段输出的语速、音量和音高。</td></tr>
+                <tr><th>sample_rate / bitrate</th><td>决定输出音频规格。长文本建议先用默认值验证，再按文件体积和音质要求调整。</td></tr>
+                <tr><th>language_boost</th><td>目标语言增强，例如中文填 <code>Chinese</code>。多语言文本可先留空或按主语言填写。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>model
+                <select id="asyncModel">
+                  <option>speech-2.8-hd</option>
+                  <option selected>speech-2.8-turbo</option>
+                  <option>speech-2.6-hd</option>
+                  <option>speech-2.6-turbo</option>
+                </select>
+              </label>
+              <label>voice_id
+                <input id="asyncVoice" value="male-qn-qingse">
+              </label>
+              <label>text_file_id
+                <input id="asyncFileId" placeholder="可选：先用文件上传接口上传 t2a_async_input">
+              </label>
+              <label>format
+                <select id="asyncFormat">
+                  <option selected>mp3</option>
+                  <option>wav</option>
+                </select>
+              </label>
+              <label class="full">text
+                <textarea id="asyncText">这里填写长文本。若填写了 text_file_id，可留空。</textarea>
+              </label>
+            </div>
+            <div class="grid three">
+              <label>speed
+                <input id="asyncSpeed" type="number" step="0.1" value="1">
+              </label>
+              <label>vol
+                <input id="asyncVol" type="number" step="0.1" value="1">
+              </label>
+              <label>pitch
+                <input id="asyncPitch" type="number" step="1" value="0">
+              </label>
+              <label>sample_rate
+                <select id="asyncSampleRate">
+                  <option>16000</option>
+                  <option>24000</option>
+                  <option selected>44100</option>
+                </select>
+              </label>
+              <label>bitrate
+                <select id="asyncBitrate">
+                  <option>64000</option>
+                  <option selected>128000</option>
+                  <option>256000</option>
+                </select>
+              </label>
+              <label>language_boost
+                <input id="asyncLang" value="Chinese">
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn" data-run="asyncCreate">创建任务</button>
+              <button class="btn secondary" data-copy="asyncCreate">复制 curl</button>
+              <button class="btn secondary" data-preview="asyncCreate">刷新 JSON</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="asyncCreate"></code>
+            <pre id="asyncCreatePreview"></pre>
+            <pre id="asyncCreateResult" class="result">等待请求...</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="async-query" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>异步长文本语音合成：查询任务</h2>
+            <p>用创建任务返回的 task_id 查询状态和结果文件 ID。endpoint：<code>/v1/query/t2a_async_query_v2</code>。</p>
+          </div>
+          <span class="method get">GET</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>用创建任务返回的 <code>task_id</code> 查询异步合成是否完成。</p>
+              <ul>
+                <li>创建任务成功后，本页会尝试自动把 <code>task_id</code> 填到这里。</li>
+                <li>未完成时等待几秒后再查；完成后查看响应中的输出文件 ID。</li>
+                <li>拿到输出文件 ID 后，在文件下载接口中填写 <code>file_id</code> 下载结果音频。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>task_id</th><td>创建异步任务返回的任务 ID。只用于查询任务状态，不能当作文件 ID 下载。</td></tr>
+                <tr><th>成功状态</th><td>响应中若显示任务完成，继续找输出音频的 <code>file_id</code> 或类似结果字段。</td></tr>
+                <tr><th>失败状态</th><td>查看响应里的错误码、错误信息和原请求 JSON，通常和文本过长、voice_id 无效、参数格式有关。</td></tr>
+              </table>
+            </details>
+            <label>task_id
+              <input id="queryTaskId" placeholder="创建任务返回的 task_id">
+            </label>
+            <div class="actions">
+              <button class="btn" data-run="asyncQuery">查询任务</button>
+              <button class="btn secondary" data-copy="asyncQuery">复制 curl</button>
+              <button class="btn secondary" data-preview="asyncQuery">刷新预览</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="asyncQuery"></code>
+            <pre id="asyncQueryPreview"></pre>
+            <pre id="asyncQueryResult" class="result">等待请求...</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="file-upload" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>上传语音相关文件</h2>
+            <p>用于音色复刻音频、试听音频，或异步语音合成长文本文件。endpoint：<code>/v1/files/upload</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>上传语音 API 需要的文件，并拿到后续接口使用的 <code>file_id</code>。</p>
+              <ul>
+                <li><code>voice_clone</code>：上传待复刻的人声音频，用于音色快速复刻。</li>
+                <li><code>prompt_audio</code>：上传参考试听音频，用于辅助复刻效果。</li>
+                <li><code>t2a_async_input</code>：上传长文本文件，用于异步长文本语音合成。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>purpose=voice_clone</th><td>上传待复刻人声音频。用于后续 <code>/v1/voice_clone</code> 的 <code>file_id</code>。</td></tr>
+                <tr><th>purpose=prompt_audio</th><td>上传参考音频，配合 <code>prompt_text</code> 作为复刻提示，可选。</td></tr>
+                <tr><th>purpose=t2a_async_input</th><td>上传长文本文件，返回的 <code>file_id</code> 填到异步创建任务的 <code>text_file_id</code>。</td></tr>
+                <tr><th>file</th><td>复刻音频通常用 <code>mp3</code>、<code>m4a</code>、<code>wav</code>；长文本上传用文本文件。按文档限制控制大小和时长。</td></tr>
+                <tr><th>返回值</th><td>重点看 <code>file_id</code>。页面会按 purpose 自动回填到复刻、参考音频、异步文本或文件查询区域。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>purpose
+                <select id="uploadPurpose">
+                  <option selected>voice_clone</option>
+                  <option>prompt_audio</option>
+                  <option>t2a_async_input</option>
+                </select>
+              </label>
+              <label>file
+                <input id="uploadFile" type="file">
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn" data-run="fileUpload">上传文件</button>
+              <button class="btn secondary" data-copy="fileUpload">复制 curl 模板</button>
+              <button class="btn secondary" data-preview="fileUpload">刷新预览</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="fileUpload"></code>
+            <pre id="fileUploadPreview"></pre>
+            <pre id="fileUploadResult" class="result">等待请求...</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="file-tools" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>文件查询与下载</h2>
+            <p>辅助异步合成结果下载，也可查看上传文件。包含 list / retrieve / retrieve_content。</p>
+          </div>
+          <span class="method get">GET</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>管理文件资产，并下载异步任务生成的音频文件。</p>
+              <ul>
+                <li>“列出文件”按 <code>purpose</code> 查看文件；选择 <code>all</code> 时不加 purpose 参数。</li>
+                <li>“查询文件”用于确认某个 <code>file_id</code> 的元数据。</li>
+                <li>“下载文件”会把返回内容转成下载链接；如果响应是音频类型，会显示播放器。</li>
+              </ul>
+            </div>
+            <details class="param-help">
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>purpose</th><td>筛选文件类型。<code>voice_clone</code>、<code>prompt_audio</code>、<code>t2a_async_input</code>、<code>t2a_async_output</code> 分别对应不同上传或生成来源。</td></tr>
+                <tr><th>purpose=all</th><td>页面会不带 purpose 参数请求列表，便于查看账号下文件概览。</td></tr>
+                <tr><th>file_id</th><td>查询或下载指定文件时必填。异步合成完成后拿到的输出文件 ID 应填在这里。</td></tr>
+                <tr><th>列出文件</th><td>用于找文件 ID 或核对文件类型，不下载文件内容。</td></tr>
+                <tr><th>查询文件</th><td>用于查看单个文件元数据，例如用途、大小、状态。</td></tr>
+                <tr><th>下载文件</th><td>用于获取文件二进制内容；音频类型会显示播放器和下载按钮。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>purpose
+                <select id="filePurpose">
+                  <option selected>voice_clone</option>
+                  <option>prompt_audio</option>
+                  <option>t2a_async_input</option>
+                  <option>t2a_async_output</option>
+                  <option>all</option>
+                </select>
+              </label>
+              <label>file_id
+                <input id="fileId" placeholder="文件 ID">
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn" data-run="fileList">列出文件</button>
+              <button class="btn secondary" data-run="fileRetrieve">查询文件</button>
+              <button class="btn secondary" data-run="fileDownload">下载文件</button>
+              <button class="btn secondary" data-copy="fileTools">复制 curl</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="fileTools"></code>
+            <pre id="fileToolsPreview"></pre>
+            <pre id="fileToolsResult" class="result">等待请求...</pre>
+            <div id="fileDownloadBox" class="audio-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="voice-clone" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>音色快速复刻</h2>
+            <p>用上传后的音频 file_id 生成可用于合成的 Voice ID。endpoint：<code>/v1/voice_clone</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>用一段人声音频复刻出可复用的自定义音色。</p>
+              <ul>
+                <li>先在“上传文件”选择 <code>voice_clone</code> 上传音频，成功后把 <code>file_id</code> 填到这里。</li>
+                <li><code>voice_id</code> 建议自己命名，便于后续合成和删除；为空时按接口行为处理。</li>
+                <li>复刻成功后，返回的 Voice ID 可直接用于同步、异步语音合成。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>file_id</th><td>必填。先用上传接口以 <code>purpose=voice_clone</code> 上传人声音频，拿返回的 <code>file_id</code>。</td></tr>
+                <tr><th>voice_id</th><td>自定义音色 ID。建议用项目名前缀加用途，例如 <code>demo_narrator_001</code>，方便查询和删除。</td></tr>
+                <tr><th>model</th><td>用于生成试听音频的语音模型。快速验证选 <code>speech-2.8-turbo</code>，质量优先选 <code>speech-2.8-hd</code>。</td></tr>
+                <tr><th>language_boost</th><td>音频主要语言。中文填 <code>Chinese</code>，英文填 <code>English</code>。</td></tr>
+                <tr><th>prompt_audio</th><td>可选参考音频文件 ID。需要先用上传接口选择 <code>prompt_audio</code> 上传。</td></tr>
+                <tr><th>prompt_text</th><td>参考音频对应文本。使用 <code>prompt_audio</code> 时建议填写，帮助对齐发音内容。</td></tr>
+                <tr><th>text</th><td>复刻完成后生成试听音频的文本，不是复刻训练文本。</td></tr>
+                <tr><th>noise / volume</th><td><code>need_noise_reduction</code> 降噪；<code>need_volume_normalization</code> 音量归一。录音质量不稳定时建议开启。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>file_id
+                <input id="cloneFileId" placeholder="上传 voice_clone 文件返回的 file_id">
+              </label>
+              <label>voice_id
+                <input id="cloneVoiceId" placeholder="自定义 Voice ID，建议带业务前缀">
+              </label>
+              <label>model
+                <select id="cloneModel">
+                  <option selected>speech-2.8-turbo</option>
+                  <option>speech-2.8-hd</option>
+                  <option>speech-2.6-turbo</option>
+                  <option>speech-2.6-hd</option>
+                </select>
+              </label>
+              <label>language
+                <input id="cloneLanguage" value="Chinese">
+              </label>
+              <label>prompt_audio file_id
+                <input id="clonePromptAudio" placeholder="可选：上传 prompt_audio 返回的 file_id">
+              </label>
+              <label>prompt_text
+                <input id="clonePromptText" placeholder="可选：参考音频对应文本">
+              </label>
+              <label class="full">试听文本 text
+                <textarea id="cloneText">这是音色复刻后的试听文本。</textarea>
+              </label>
+            </div>
+            <div class="checks">
+              <label><input id="cloneNeedNoiseReduction" type="checkbox" checked> need_noise_reduction</label>
+              <label><input id="cloneNeedVolumeNormalization" type="checkbox" checked> need_volume_normalization</label>
+            </div>
+            <div class="actions">
+              <button class="btn" data-run="voiceClone">发起复刻</button>
+              <button class="btn secondary" data-copy="voiceClone">复制 curl</button>
+              <button class="btn secondary" data-preview="voiceClone">刷新 JSON</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="voiceClone"></code>
+            <pre id="voiceClonePreview"></pre>
+            <pre id="voiceCloneResult" class="result">等待请求...</pre>
+            <div id="voiceCloneAudio" class="audio-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="voice-design" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>音色设计</h2>
+            <p>通过文本描述生成音色和试听音频。endpoint：<code>/v1/voice_design</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>通过文字描述创建新音色，适合没有录音素材但需要角色化声音的场景。</p>
+              <ul>
+                <li><code>prompt</code> 写声音特征，例如年龄、性别、语气、情绪、用途。</li>
+                <li><code>preview_text</code> 是试听内容，建议用真实业务句子检查效果。</li>
+                <li>生成成功后保存返回的 Voice ID，后续在合成接口的 <code>voice_id</code> 中使用。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>voice_id</th><td>可选自定义音色 ID。留空时按接口默认行为生成；填写时建议用业务前缀，避免和已有 ID 冲突。</td></tr>
+                <tr><th>model</th><td>用于生成试听音频。<code>speech-2.8-turbo</code> 更快，<code>speech-2.8-hd</code> 更适合评估音质。</td></tr>
+                <tr><th>prompt</th><td>音色描述。建议包含性别、年龄、语言、情绪、语速、使用场景，例如“年轻女性、中文、亲切、客服播报”。</td></tr>
+                <tr><th>preview_text</th><td>试听文本。用真实业务句子更容易判断音色是否适合，不要只填很短的词。</td></tr>
+                <tr><th>返回值</th><td>重点看 Voice ID 和试听音频。满意后把 Voice ID 填到合成接口的 <code>voice_id</code>。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>voice_id
+                <input id="designVoiceId" placeholder="可选：自定义 Voice ID">
+              </label>
+              <label>model
+                <select id="designModel">
+                  <option selected>speech-2.8-turbo</option>
+                  <option>speech-2.8-hd</option>
+                  <option>speech-2.6-turbo</option>
+                  <option>speech-2.6-hd</option>
+                </select>
+              </label>
+              <label class="full">prompt
+                <textarea id="designPrompt">一个温和、清晰、适合产品介绍的年轻男性中文声音。</textarea>
+              </label>
+              <label class="full">preview_text
+                <textarea id="designPreviewText">欢迎使用 MiniMax 音色设计 API。</textarea>
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn" data-run="voiceDesign">生成音色</button>
+              <button class="btn secondary" data-copy="voiceDesign">复制 curl</button>
+              <button class="btn secondary" data-preview="voiceDesign">刷新 JSON</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="voiceDesign"></code>
+            <pre id="voiceDesignPreview"></pre>
+            <pre id="voiceDesignResult" class="result">等待请求...</pre>
+            <div id="voiceDesignAudio" class="audio-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="voice-list" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>查询可用音色</h2>
+            <p>查询系统音色、快速复刻音色、文生音色或全部音色。endpoint：<code>/v1/get_voice</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>查询当前账号可用的音色 ID，适合在合成前确认音色是否存在。</p>
+              <ul>
+                <li><code>system</code> 查平台系统音色；<code>voice_cloning</code> 查复刻音色。</li>
+                <li><code>voice_generation</code> 查音色设计生成的音色；<code>all</code> 查全部。</li>
+                <li>把返回的音色 ID 复制到同步或异步合成接口的 <code>voice_id</code> 字段。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>system</th><td>查询平台预设系统音色。适合先选一个默认音色快速接入合成。</td></tr>
+                <tr><th>voice_cloning</th><td>查询快速复刻生成的音色。</td></tr>
+                <tr><th>voice_generation</th><td>查询音色设计生成的音色。</td></tr>
+                <tr><th>all</th><td>查询全部可用音色。音色很多时建议再按业务记录筛选。</td></tr>
+                <tr><th>返回值</th><td>重点看音色 ID、音色类型和名称。把 ID 复制到合成、删除或资产管理场景。</td></tr>
+              </table>
+            </details>
+            <label>voice_type
+              <select id="voiceType">
+                <option>system</option>
+                <option>voice_cloning</option>
+                <option>voice_generation</option>
+                <option selected>all</option>
+              </select>
+            </label>
+            <div class="actions">
+              <button class="btn" data-run="voiceList">查询音色</button>
+              <button class="btn secondary" data-copy="voiceList">复制 curl</button>
+              <button class="btn secondary" data-preview="voiceList">刷新预览</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="voiceList"></code>
+            <pre id="voiceListPreview"></pre>
+            <pre id="voiceListResult" class="result">等待请求...</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="voice-delete" class="api-section">
+        <div class="section-head">
+          <div>
+            <h2>删除音色</h2>
+            <p>删除快速复刻或文本生成音色。删除后对应 Voice ID 无法继续使用。endpoint：<code>/v1/delete_voice</code>。</p>
+          </div>
+          <span class="method post">POST</span>
+        </div>
+        <div class="api-body">
+          <div class="form-panel">
+            <div class="guide">
+              <h3>使用说明</h3>
+              <p>删除不再使用的复刻音色或文本生成音色。</p>
+              <ul>
+                <li>只删除自定义资产，不用于删除系统音色。</li>
+                <li>删除前先用“查询可用音色”确认 <code>voice_type</code> 和 <code>voice_id</code>。</li>
+                <li>点击删除会二次确认，删除后对应 Voice ID 不应再用于合成。</li>
+              </ul>
+            </div>
+            <details class="param-help" open>
+              <summary>参数和值说明</summary>
+              <table class="param-table">
+                <tr><th>voice_type</th><td>只能删除自定义音色类型：<code>voice_cloning</code> 或 <code>voice_generation</code>。不要填 <code>system</code>。</td></tr>
+                <tr><th>voice_id</th><td>要删除的音色 ID。建议先用“查询可用音色”确认它存在且类型正确。</td></tr>
+                <tr><th>删除后</th><td>该 Voice ID 不应继续用于同步或异步合成；已有业务配置需要同步替换。</td></tr>
+                <tr><th>安全检查</th><td>页面点击删除时会弹出二次确认；curl 调用时请自己确认参数，避免删错音色。</td></tr>
+              </table>
+            </details>
+            <div class="grid">
+              <label>voice_type
+                <select id="deleteVoiceType">
+                  <option selected>voice_cloning</option>
+                  <option>voice_generation</option>
+                </select>
+              </label>
+              <label>voice_id
+                <input id="deleteVoiceId" placeholder="要删除的 Voice ID">
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn warn" data-run="voiceDelete">确认删除</button>
+              <button class="btn secondary" data-copy="voiceDelete">复制 curl</button>
+              <button class="btn secondary" data-preview="voiceDelete">刷新 JSON</button>
+            </div>
+          </div>
+          <div class="result-panel">
+            <code class="endpoint" data-endpoint="voiceDelete"></code>
+            <pre id="voiceDeletePreview"></pre>
+            <pre id="voiceDeleteResult" class="result">等待请求...</pre>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        文档入口：<a href="https://platform.minimaxi.com/docs/guides/models-intro" target="_blank" rel="noopener">模型概览</a>、
+        <a href="https://platform.minimaxi.com/docs/api-reference/speech-t2a-http" target="_blank" rel="noopener">同步合成 HTTP</a>、
+        <a href="https://platform.minimaxi.com/docs/guides/speech-t2a-websocket" target="_blank" rel="noopener">WebSocket 合成</a>、
+        <a href="https://platform.minimaxi.com/docs/guides/speech-t2a-async" target="_blank" rel="noopener">异步合成</a>、
+        <a href="https://platform.minimaxi.com/docs/api-reference/voice-design-design" target="_blank" rel="noopener">音色设计</a>。
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const endpoints = {
+      t2aHttp: { method: "POST", path: "/v1/t2a_v2" },
+      asyncCreate: { method: "POST", path: "/v1/t2a_async_v2" },
+      asyncQuery: { method: "GET", path: "/v1/query/t2a_async_query_v2" },
+      fileUpload: { method: "POST", path: "/v1/files/upload" },
+      fileList: { method: "GET", path: "/v1/files/list" },
+      fileRetrieve: { method: "GET", path: "/v1/files/retrieve" },
+      fileDownload: { method: "GET", path: "/v1/files/retrieve_content" },
+      voiceClone: { method: "POST", path: "/v1/voice_clone" },
+      voiceDesign: { method: "POST", path: "/v1/voice_design" },
+      voiceList: { method: "POST", path: "/v1/get_voice" },
+      voiceDelete: { method: "POST", path: "/v1/delete_voice" },
+      ws: { method: "WS", path: "/ws/v1/t2a_v2" }
+    };
+
+    const requestBuilders = {
+      t2aHttp() {
+        const body = clean({
+          model: value("t2aModel"),
+          text: value("t2aText"),
+          stream: checked("t2aStream"),
+          language_boost: value("t2aLang"),
+          subtitle_enable: checked("t2aSubtitle"),
+          output_format: "hex",
+          voice_setting: clean({
+            voice_id: value("t2aVoice"),
+            speed: number("t2aSpeed"),
+            vol: number("t2aVol"),
+            pitch: number("t2aPitch"),
+            emotion: value("t2aEmotion")
+          }),
+          audio_setting: clean({
+            sample_rate: number("t2aSampleRate"),
+            bitrate: number("t2aBitrate"),
+            format: value("t2aFormat"),
+            channel: number("t2aChannel")
+          })
+        });
+        if (checked("t2aIncludeTimestamp")) body.timestamp_enable = true;
+        return jsonRequest("t2aHttp", body);
+      },
+
+      asyncCreate() {
+        const body = clean({
+          model: value("asyncModel"),
+          text: value("asyncText"),
+          text_file_id: value("asyncFileId"),
+          language_boost: value("asyncLang"),
+          audio_setting: clean({
+            audio_sample_rate: number("asyncSampleRate"),
+            bitrate: number("asyncBitrate"),
+            format: value("asyncFormat")
+          }),
+          voice_setting: clean({
+            voice_id: value("asyncVoice"),
+            speed: number("asyncSpeed"),
+            vol: number("asyncVol"),
+            pitch: number("asyncPitch")
+          })
+        });
+        if (body.text_file_id) delete body.text;
+        return jsonRequest("asyncCreate", body);
+      },
+
+      asyncQuery() {
+        return queryRequest("asyncQuery", { task_id: value("queryTaskId") });
+      },
+
+      fileUpload() {
+        const file = $("uploadFile").files[0];
+        const form = new FormData();
+        form.append("purpose", value("uploadPurpose"));
+        if (file) form.append("file", file);
+        return {
+          key: "fileUpload",
+          endpoint: endpoints.fileUpload,
+          url: fullUrl(endpoints.fileUpload.path),
+          init: { method: "POST", headers: authHeaders(false), body: form },
+          preview: {
+            method: "POST",
+            url: fullUrl(endpoints.fileUpload.path),
+            body: { purpose: value("uploadPurpose"), file: file ? file.name : "<选择文件>" }
+          }
+        };
+      },
+
+      fileList() {
+        const purpose = value("filePurpose");
+        return queryRequest("fileList", purpose === "all" ? {} : { purpose });
+      },
+
+      fileRetrieve() {
+        return queryRequest("fileRetrieve", { file_id: value("fileId") });
+      },
+
+      fileDownload() {
+        return queryRequest("fileDownload", { file_id: value("fileId") });
+      },
+
+      voiceClone() {
+        return jsonRequest("voiceClone", clean({
+          file_id: value("cloneFileId"),
+          voice_id: value("cloneVoiceId"),
+          model: value("cloneModel"),
+          language_boost: value("cloneLanguage"),
+          text: value("cloneText"),
+          clone_prompt: clean({
+            prompt_audio: numberOrString("clonePromptAudio"),
+            prompt_text: value("clonePromptText")
+          }),
+          need_noise_reduction: checked("cloneNeedNoiseReduction"),
+          need_volume_normalization: checked("cloneNeedVolumeNormalization"),
+          aigc_watermark: false
+        }));
+      },
+
+      voiceDesign() {
+        return jsonRequest("voiceDesign", clean({
+          model: value("designModel"),
+          voice_id: value("designVoiceId"),
+          prompt: value("designPrompt"),
+          preview_text: value("designPreviewText")
+        }));
+      },
+
+      voiceList() {
+        return jsonRequest("voiceList", { voice_type: value("voiceType") });
+      },
+
+      voiceDelete() {
+        return jsonRequest("voiceDelete", clean({
+          voice_type: value("deleteVoiceType"),
+          voice_id: value("deleteVoiceId")
+        }));
+      },
+
+      ws() {
+        const start = clean({
+          event: "task_start",
+          model: value("wsModel"),
+          voice_setting: clean({ voice_id: value("wsVoice"), speed: 1, vol: 1, pitch: 0 }),
+          audio_setting: clean({ format: value("wsFormat"), sample_rate: 32000, bitrate: 128000, channel: 1 })
+        });
+        const cont = clean({
+          event: "task_continue",
+          text: value("wsText")
+        });
+        const finish = { event: "task_finish" };
+        return {
+          key: "ws",
+          endpoint: endpoints.ws,
+          url: value("wsUrl"),
+          preview: { url: value("wsUrl"), headers: { Authorization: "Bearer <API_KEY>" }, messages: [start, cont, finish] }
+        };
+      }
+    };
+
+    function value(id) {
+      return ($(id)?.value || "").trim();
+    }
+
+    function checked(id) {
+      return Boolean($(id)?.checked);
+    }
+
+    function number(id) {
+      const raw = value(id);
+      return raw === "" ? undefined : Number(raw);
+    }
+
+    function numberOrString(id) {
+      const raw = value(id);
+      if (raw === "") return undefined;
+      return /^\d+$/.test(raw) ? Number(raw) : raw;
+    }
+
+    function clean(input) {
+      if (Array.isArray(input)) {
+        return input.map(clean).filter((v) => v !== undefined);
+      }
+      if (input && typeof input === "object" && !(input instanceof FormData)) {
+        const out = {};
+        for (const [key, val] of Object.entries(input)) {
+          const next = clean(val);
+          if (next !== undefined) out[key] = next;
+        }
+        return Object.keys(out).length ? out : undefined;
+      }
+      if (input === "" || input === undefined || input === null) return undefined;
+      if (Number.isNaN(input)) return undefined;
+      return input;
+    }
+
+    function baseUrl() {
+      const selected = value("apiBase");
+      return (selected || value("customBase") || "https://api.minimaxi.com").replace(/\/+$/, "");
+    }
+
+    function fullUrl(path, params) {
+      const url = new URL(baseUrl() + path);
+      if (params) {
+        for (const [key, val] of Object.entries(params)) {
+          if (val !== undefined && val !== "") url.searchParams.set(key, val);
+        }
+      }
+      return url.toString();
+    }
+
+    function authHeaders(json = true) {
+      const headers = {};
+      const key = value("apiKey");
+      if (key) headers.Authorization = key.startsWith("Bearer ") ? key : `Bearer ${key}`;
+      if (json) headers["Content-Type"] = "application/json";
+      return headers;
+    }
+
+    function jsonRequest(key, body) {
+      const endpoint = endpoints[key];
+      return {
+        key,
+        endpoint,
+        url: fullUrl(endpoint.path),
+        init: { method: endpoint.method, headers: authHeaders(true), body: JSON.stringify(body || {}) },
+        preview: { method: endpoint.method, url: fullUrl(endpoint.path), body: body || {} }
+      };
+    }
+
+    function queryRequest(key, params) {
+      const endpoint = endpoints[key];
+      const url = fullUrl(endpoint.path, params);
+      return {
+        key,
+        endpoint,
+        url,
+        init: { method: endpoint.method, headers: authHeaders(false) },
+        preview: { method: endpoint.method, url }
+      };
+    }
+
+    async function runRequest(name) {
+      const req = requestBuilders[name]();
+      const resultId = resultIdFor(req.key);
+      setText(resultId, "请求中...");
+      clearAudio(req.key);
+      refreshPreview(name);
+
+      if (req.key === "voiceDelete") {
+        const id = value("deleteVoiceId");
+        if (!id || !confirm(`确认删除音色 ${id}？此操作不可恢复。`)) {
+          setText(resultId, "已取消删除。");
+          return;
+        }
+      }
+
+      if (!value("apiKey")) {
+        setText(resultId, "缺少 API Key。请先在页面顶部填写 API Key。");
+        return;
+      }
+
+      try {
+        const response = await fetch(req.url, req.init);
+        const contentType = response.headers.get("content-type") || "";
+        if (req.key === "fileDownload") {
+          await handleDownloadResponse(response, req);
+          return;
+        }
+        const payload = contentType.includes("application/json")
+          ? await response.json()
+          : await response.text();
+        setText(resultId, formatResponse(response, payload));
+        maybeRenderAudio(req.key, payload);
+        if (req.key === "asyncCreate") fillTaskId(payload);
+        if (req.key === "fileUpload") fillFileIds(payload);
+      } catch (error) {
+        setText(resultId, `请求失败：${error.message}\n\n常见原因：浏览器 CORS 被拦截、网络不可达、API Base 错误，或 API Key 无效。可复制 curl 在终端重试。`);
+      }
+    }
+
+    async function handleDownloadResponse(response, req) {
+      const box = $("fileDownloadBox");
+      if (!response.ok) {
+        const text = await response.text();
+        setText("fileToolsResult", formatResponse(response, text));
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const filename = `minimax-file-${value("fileId") || Date.now()}`;
+      box.innerHTML = "";
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.className = "btn secondary";
+      link.textContent = `下载 ${filename}`;
+      box.appendChild(link);
+      if ((blob.type || "").startsWith("audio/")) {
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.src = url;
+        box.appendChild(audio);
+      }
+      setText("fileToolsResult", formatResponse(response, { size: blob.size, type: blob.type || "application/octet-stream", object_url: url }));
+    }
+
+    function formatResponse(response, payload) {
+      const head = {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText
+      };
+      return JSON.stringify({ response: head, data: payload }, null, 2);
+    }
+
+    function maybeRenderAudio(key, payload) {
+      const data = typeof payload === "string" ? tryJson(payload) : payload;
+      if (!data || typeof data !== "object") return;
+      const audioHex = findFirst(data, ["audio", "audio_file", "trial_audio", "demo_audio"]);
+      const audioUrl = findFirst(data, ["audio_url", "demo_audio_url", "url", "download_url"]);
+      const format = findFirst(data, ["format"]) || inferFormatFromForm(key) || "mp3";
+      const boxId = key === "voiceDesign" ? "voiceDesignAudio" : key === "voiceClone" ? "voiceCloneAudio" : key === "t2aHttp" ? "t2aHttpAudio" : "";
+      if (!boxId) return;
+      const box = $(boxId);
+      box.innerHTML = "";
+
+      if (typeof audioHex === "string" && /^[0-9a-fA-F]+$/.test(audioHex.slice(0, 80))) {
+        const blob = hexToBlob(audioHex, audioMime(format));
+        const url = URL.createObjectURL(blob);
+        appendAudio(box, url, `minimax-audio.${format}`);
+      } else if (typeof audioUrl === "string" && /^https?:\/\//.test(audioUrl)) {
+        appendAudio(box, audioUrl, `minimax-audio.${format}`);
+      }
+    }
+
+    function appendAudio(box, url, filename) {
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.src = url;
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.className = "btn secondary";
+      link.textContent = "下载音频";
+      box.appendChild(audio);
+      box.appendChild(link);
+    }
+
+    function hexToBlob(hex, mime) {
+      const cleanHex = hex.length % 2 ? `0${hex}` : hex;
+      const bytes = new Uint8Array(cleanHex.length / 2);
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(cleanHex.slice(i * 2, i * 2 + 2), 16);
+      }
+      return new Blob([bytes], { type: mime });
+    }
+
+    function audioMime(format) {
+      if (format === "wav") return "audio/wav";
+      if (format === "pcm") return "application/octet-stream";
+      return "audio/mpeg";
+    }
+
+    function inferFormatFromForm(key) {
+      if (key === "t2aHttp") return value("t2aFormat");
+      if (key === "voiceDesign") return "mp3";
+      if (key === "voiceClone") return "mp3";
+      return "mp3";
+    }
+
+    function findFirst(obj, names) {
+      const stack = [obj];
+      const seen = new Set();
+      while (stack.length) {
+        const cur = stack.pop();
+        if (!cur || typeof cur !== "object" || seen.has(cur)) continue;
+        seen.add(cur);
+        for (const name of names) {
+          if (Object.prototype.hasOwnProperty.call(cur, name) && cur[name]) return cur[name];
+        }
+        for (const val of Object.values(cur)) {
+          if (val && typeof val === "object") stack.push(val);
+        }
+      }
+      return undefined;
+    }
+
+    function fillTaskId(payload) {
+      const data = typeof payload === "string" ? tryJson(payload) : payload;
+      const taskId = findFirst(data, ["task_id"]);
+      if (taskId) $("queryTaskId").value = taskId;
+    }
+
+    function fillFileIds(payload) {
+      const data = typeof payload === "string" ? tryJson(payload) : payload;
+      const fileId = findFirst(data, ["file_id"]);
+      if (!fileId) return;
+      const purpose = value("uploadPurpose");
+      $("fileId").value = fileId;
+      if (purpose === "voice_clone") $("cloneFileId").value = fileId;
+      if (purpose === "prompt_audio") $("clonePromptAudio").value = fileId;
+      if (purpose === "t2a_async_input") $("asyncFileId").value = fileId;
+    }
+
+    function tryJson(text) {
+      try { return JSON.parse(text); } catch { return null; }
+    }
+
+    function resultIdFor(key) {
+      if (key === "fileList" || key === "fileRetrieve" || key === "fileDownload") return "fileToolsResult";
+      return `${key}Result`;
+    }
+
+    function clearAudio(key) {
+      const ids = {
+        t2aHttp: "t2aHttpAudio",
+        voiceClone: "voiceCloneAudio",
+        voiceDesign: "voiceDesignAudio",
+        fileDownload: "fileDownloadBox"
+      };
+      if (ids[key]) $(ids[key]).innerHTML = "";
+    }
+
+    function setText(id, text) {
+      const el = $(id);
+      if (el) el.textContent = text;
+      syncResultPanelHeights();
+    }
+
+    function syncResultPanelHeights() {
+      if (window.innerWidth <= 1080) {
+        document.querySelectorAll(".result-panel").forEach((panel) => {
+          panel.style.height = "";
+        });
+        return;
+      }
+      requestAnimationFrame(() => {
+        document.querySelectorAll(".api-section").forEach((section) => {
+          const form = section.querySelector(".form-panel");
+          const result = section.querySelector(".result-panel");
+          if (!form || !result) return;
+          result.style.height = `${Math.ceil(form.getBoundingClientRect().height)}px`;
+        });
+      });
+    }
+
+    function observePanelHeights() {
+      if (!("ResizeObserver" in window)) {
+        window.addEventListener("resize", syncResultPanelHeights);
+        document.addEventListener("toggle", syncResultPanelHeights, true);
+        return;
+      }
+      const observer = new ResizeObserver(syncResultPanelHeights);
+      document.querySelectorAll(".form-panel").forEach((panel) => observer.observe(panel));
+      window.addEventListener("resize", syncResultPanelHeights);
+      document.addEventListener("toggle", syncResultPanelHeights, true);
+    }
+
+    function refreshPreview(name) {
+      const req = requestBuilders[name]();
+      const previewId = previewIdFor(req.key);
+      setEndpoint(req.key, req.url || fullUrl(req.endpoint.path));
+      setText(previewId, JSON.stringify(req.preview, null, 2));
+    }
+
+    function previewIdFor(key) {
+      if (key === "fileList" || key === "fileRetrieve" || key === "fileDownload") return "fileToolsPreview";
+      return `${key}Preview`;
+    }
+
+    function setEndpoint(key, url) {
+      const directKey = key === "fileList" || key === "fileRetrieve" || key === "fileDownload" ? "fileTools" : key;
+      const el = document.querySelector(`[data-endpoint="${directKey}"]`);
+      if (el) el.textContent = url;
+    }
+
+    function buildCurl(name) {
+      const req = requestBuilders[name]();
+      if (name === "ws") {
+        return `wscat -c "${value("wsUrl")}" -H "Authorization: Bearer <API_KEY>"`;
+      }
+      if (name === "fileUpload") {
+        return [
+          `curl -X POST "${req.url}"`,
+          `  -H "Authorization: Bearer <API_KEY>"`,
+          `  -F "purpose=${value("uploadPurpose")}"`,
+          `  -F "file=@/path/to/file"`
+        ].join(" \\\n");
+      }
+      const headers = [`-H "Authorization: Bearer <API_KEY>"`];
+      if (req.init?.headers?.["Content-Type"]) headers.push(`-H "Content-Type: application/json"`);
+      const body = req.init?.body ? ` \\\n  -d '${req.init.body.replaceAll("'", "'\\''")}'` : "";
+      return [`curl -X ${req.endpoint.method} "${req.url}"`, ...headers.map((h) => `  ${h}`)].join(" \\\n") + body;
+    }
+
+    async function copyCurl(name) {
+      const curl = buildCurl(name);
+      try {
+        await navigator.clipboard.writeText(curl);
+        toast(`已复制 ${name} curl`);
+      } catch {
+        const previewId = previewIdFor(name === "fileTools" ? "fileList" : name);
+        setText(previewId, curl);
+      }
+    }
+
+    function toast(text) {
+      const old = document.querySelector(".toast");
+      if (old) old.remove();
+      const el = document.createElement("div");
+      el.className = "toast";
+      el.textContent = text;
+      Object.assign(el.style, {
+        position: "fixed",
+        right: "18px",
+        bottom: "18px",
+        background: "var(--ink)",
+        color: "var(--paper)",
+        padding: "10px 12px",
+        borderRadius: "8px",
+        zIndex: 60,
+        boxShadow: "var(--shadow)",
+        fontWeight: "700"
+      });
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1800);
+    }
+
+    function saveSessionKey() {
+      const key = value("apiKey");
+      if (key) sessionStorage.setItem("minimax_api_key", key);
+    }
+
+    function loadSessionKey() {
+      const key = sessionStorage.getItem("minimax_api_key");
+      if (key) $("apiKey").value = key;
+    }
+
+    document.addEventListener("click", async (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      const run = button.dataset.run;
+      const preview = button.dataset.preview;
+      const copy = button.dataset.copy;
+      button.classList.add("is-pressed");
+      setTimeout(() => button.classList.remove("is-pressed"), 140);
+      if (run) {
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.classList.add("is-loading");
+        try {
+          await runRequest(run);
+        } finally {
+          button.disabled = false;
+          button.classList.remove("is-loading");
+          button.textContent = originalText;
+        }
+      }
+      if (preview) {
+        refreshPreview(preview);
+        toast("已刷新请求预览");
+      }
+      if (copy) await copyCurl(copy === "fileTools" ? "fileList" : copy);
+    });
+
+    document.addEventListener("input", (event) => {
+      if (event.target.id === "apiKey") saveSessionKey();
+      refreshAllPreviews();
+    });
+
+    document.addEventListener("change", refreshAllPreviews);
+
+    function refreshAllPreviews() {
+      [
+        "t2aHttp",
+        "ws",
+        "asyncCreate",
+        "asyncQuery",
+        "fileUpload",
+        "fileList",
+        "voiceClone",
+        "voiceDesign",
+        "voiceList",
+        "voiceDelete"
+      ].forEach((name) => {
+        try { refreshPreview(name); } catch (error) { /* keep the page responsive while fields are partial */ }
+      });
+    }
+
+    loadSessionKey();
+    refreshAllPreviews();
+    observePanelHeights();
+    syncResultPanelHeights();
+  </script>
+</body>
+</html>
