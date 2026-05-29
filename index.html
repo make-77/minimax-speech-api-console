@@ -760,7 +760,7 @@
         <a href="#async-create"><span>异步合成创建</span><code>POST</code></a>
         <a href="#async-query"><span>异步任务查询</span><code>GET</code></a>
         <a href="#file-upload"><span>上传文件</span><code>POST</code></a>
-        <a href="#file-tools"><span>文件查询下载</span><code>GET</code></a>
+        <a href="#file-tools"><span>文件管理</span><code>GET/POST</code></a>
         <a href="#voice-clone"><span>音色快速复刻</span><code>POST</code></a>
         <a href="#voice-design"><span>音色设计</span><code>POST</code></a>
         <a href="#voice-list"><span>查询可用音色</span><code>POST</code></a>
@@ -815,22 +815,24 @@
               <p>用于短文本即时生成语音，适合按钮试听、实时播报、对话式回复。</p>
               <ul>
                 <li><code>voice_id</code> 可填系统音色、音色复刻结果或音色设计结果。</li>
-                <li>返回的音频通常在响应 JSON 的音频字段中，页面会尝试把 hex 音频转成播放器。</li>
+                <li>返回的音频可能是 hex 字符串或临时 URL，页面会自动生成播放器和下载按钮。</li>
                 <li>如果浏览器提示 CORS，点击“复制 curl”到终端测试，或把 API Base 改成本地代理地址。</li>
               </ul>
             </div>
             <details class="param-help" open>
               <summary>参数和值说明</summary>
               <table class="param-table">
-                <tr><th>model</th><td><code>speech-2.8-turbo</code> 偏速度和实时性；<code>speech-2.8-hd</code> 偏音质和表现力；<code>speech-2.6-*</code> 可作为兼容选择；<code>speech-02-*</code> 适合仍在使用 02 系列的项目。</td></tr>
+                <tr><th>model</th><td><code>speech-2.8-turbo</code> 偏速度和实时性；<code>speech-2.8-hd</code> 偏音质和表现力；<code>speech-2.6-*</code>、<code>speech-02-*</code>、<code>speech-01-*</code> 可作为兼容选择。</td></tr>
                 <tr><th>voice_id</th><td>填系统音色 ID、复刻音色 ID 或音色设计 ID。默认示例 <code>male-qn-qingse</code> 仅用于快速试跑。</td></tr>
                 <tr><th>text</th><td>要合成的文本。同步接口适合短文本，过长内容建议改用异步合成。</td></tr>
                 <tr><th>speed / vol / pitch</th><td><code>speed</code> 控制语速，<code>vol</code> 控制音量，<code>pitch</code> 控制音高；默认值分别是 <code>1</code>、<code>1</code>、<code>0</code>。</td></tr>
-                <tr><th>emotion</th><td>为空表示不指定情绪；可选 <code>happy</code>、<code>sad</code>、<code>angry</code>、<code>fearful</code>、<code>disgusted</code>、<code>surprised</code>、<code>neutral</code>。</td></tr>
-                <tr><th>format</th><td><code>mp3</code> 体积小、兼容好；<code>wav</code> 便于后期处理；<code>pcm</code> 适合底层音频管线。</td></tr>
+                <tr><th>emotion</th><td>为空表示不指定情绪；可选 <code>happy</code>、<code>sad</code>、<code>angry</code>、<code>fearful</code>、<code>disgusted</code>、<code>surprised</code>、<code>calm</code>、<code>fluent</code>。</td></tr>
+                <tr><th>format</th><td><code>mp3</code> 体积小、兼容好；<code>wav</code>、<code>flac</code> 便于高质量后处理；<code>pcm</code> 适合底层音频管线。</td></tr>
                 <tr><th>sample_rate / bitrate / channel</th><td>采样率和码率越高音质越好、文件越大；<code>channel=1</code> 为单声道，<code>2</code> 为双声道。</td></tr>
-                <tr><th>language_boost</th><td>用于增强指定语言识别和发音表现。中文可填 <code>Chinese</code>，英文可填 <code>English</code>，不确定可尝试 <code>auto</code> 或留空。</td></tr>
-                <tr><th>subtitle / stream / timestamp</th><td><code>subtitle_enable</code> 请求字幕；<code>stream</code> 请求流式返回；<code>timestamp_enable</code> 请求时间戳信息。</td></tr>
+                <tr><th>language_boost</th><td>用于增强指定语言识别和发音表现。中文可填 <code>Chinese</code>，粤语填 <code>Chinese,Yue</code>，英文填 <code>English</code>，不确定可用 <code>auto</code> 或留空。</td></tr>
+                <tr><th>output_format</th><td>非流式可选 <code>hex</code> 或 <code>url</code>；URL 有效期按官方接口返回规则处理。流式场景只支持 <code>hex</code>。</td></tr>
+                <tr><th>返回音频</th><td><code>hex</code> 返回时页面会转成浏览器 Blob 播放和下载；<code>url</code> 返回时页面会直接使用链接播放，并提供下载/打开链接按钮。</td></tr>
+                <tr><th>高级开关</th><td><code>subtitle_enable</code> 请求字幕；<code>stream</code> 请求流式返回；<code>timestamp_enable</code> 请求时间戳；<code>text_normalization</code> 改善中英文数字读法；<code>latex_read</code> 读取 LaTeX 公式；<code>force_cbr</code> 仅流式 MP3 生效；<code>aigc_watermark</code> 控制是否添加音频水印。</td></tr>
               </table>
             </details>
             <div class="grid">
@@ -842,6 +844,8 @@
                   <option>speech-2.6-turbo</option>
                   <option>speech-02-hd</option>
                   <option>speech-02-turbo</option>
+                  <option>speech-01-hd</option>
+                  <option>speech-01-turbo</option>
                 </select>
               </label>
               <label>voice_id
@@ -870,14 +874,22 @@
                   <option>fearful</option>
                   <option>disgusted</option>
                   <option>surprised</option>
-                  <option>neutral</option>
+                  <option>calm</option>
+                  <option>fluent</option>
                 </select>
               </label>
               <label>format
                 <select id="t2aFormat">
                   <option selected>mp3</option>
                   <option>wav</option>
+                  <option>flac</option>
                   <option>pcm</option>
+                </select>
+              </label>
+              <label>output_format
+                <select id="t2aOutputFormat">
+                  <option selected>hex</option>
+                  <option>url</option>
                 </select>
               </label>
               <label>sample_rate
@@ -905,13 +917,17 @@
                 </select>
               </label>
               <label>language_boost
-                <input id="t2aLang" value="Chinese" placeholder="Chinese / English / auto">
+                <input id="t2aLang" value="auto" placeholder="Chinese / Chinese,Yue / English / auto">
               </label>
             </div>
             <div class="checks">
               <label><input id="t2aSubtitle" type="checkbox"> subtitle_enable</label>
               <label><input id="t2aStream" type="checkbox"> stream</label>
               <label><input id="t2aIncludeTimestamp" type="checkbox"> include timestamp</label>
+              <label><input id="t2aTextNormalization" type="checkbox"> text_normalization</label>
+              <label><input id="t2aLatexRead" type="checkbox"> latex_read</label>
+              <label><input id="t2aForceCbr" type="checkbox"> force_cbr</label>
+              <label><input id="t2aAigcWatermark" type="checkbox"> aigc_watermark</label>
             </div>
             <div class="actions">
               <button class="btn" data-run="t2aHttp">发送请求</button>
@@ -951,9 +967,10 @@
               <summary>参数和值说明</summary>
               <table class="param-table">
                 <tr><th>WebSocket URL</th><td>默认 <code>wss://api.minimaxi.com/ws/v1/t2a_v2</code>。如果你有自己的代理，填代理的 WS 地址。</td></tr>
-                <tr><th>model</th><td>实时播放优先选 <code>speech-2.8-turbo</code>；更重视音质可选 <code>speech-2.8-hd</code>。</td></tr>
+                <tr><th>model</th><td>实时播放优先选 <code>speech-2.8-turbo</code>；更重视音质可选 <code>speech-2.8-hd</code>，也可按兼容需要使用 2.6 / 02 / 01 系列。</td></tr>
                 <tr><th>voice_id</th><td>与 HTTP 合成一致，填系统音色、复刻音色或设计音色的 ID。</td></tr>
-                <tr><th>format</th><td><code>mp3</code> 适合浏览器播放；<code>wav</code> 适合后处理；<code>pcm</code> 适合自定义播放器或底层音频流。</td></tr>
+                <tr><th>format</th><td><code>mp3</code> 适合浏览器播放；<code>pcm</code> 适合自定义播放器或底层音频流；<code>flac</code> 适合高质量流式保存。</td></tr>
+                <tr><th>language_boost</th><td>与 HTTP 合成一致，可填 <code>auto</code>、<code>Chinese</code>、<code>Chinese,Yue</code>、<code>English</code> 等。</td></tr>
                 <tr><th>text</th><td>页面生成 <code>task_continue</code> 消息中的文本。真实流式场景可以分段发送多条文本。</td></tr>
                 <tr><th>Authorization</th><td>MiniMax 需要握手请求头；浏览器不能直接设置，需由后端代理补上 <code>Bearer API_KEY</code>。</td></tr>
               </table>
@@ -968,6 +985,10 @@
                   <option selected>speech-2.8-turbo</option>
                   <option>speech-2.6-hd</option>
                   <option>speech-2.6-turbo</option>
+                  <option>speech-02-hd</option>
+                  <option>speech-02-turbo</option>
+                  <option>speech-01-hd</option>
+                  <option>speech-01-turbo</option>
                 </select>
               </label>
               <label>voice_id
@@ -976,9 +997,12 @@
               <label>format
                 <select id="wsFormat">
                   <option selected>mp3</option>
-                  <option>wav</option>
                   <option>pcm</option>
+                  <option>flac</option>
                 </select>
+              </label>
+              <label>language_boost
+                <input id="wsLang" value="auto" placeholder="Chinese / Chinese,Yue / English / auto">
               </label>
               <label class="full">text
                 <textarea id="wsText">这是 WebSocket 流式合成的文本。</textarea>
@@ -1014,20 +1038,21 @@
               <ul>
                 <li>短长文本可直接填 <code>text</code>；更长内容先用上传文件接口上传 <code>t2a_async_input</code>，再填 <code>text_file_id</code>。</li>
                 <li>创建成功后复制或自动带出的 <code>task_id</code>，到“异步任务查询”里轮询状态。</li>
-                <li>查询结果里若出现输出文件 ID，再到“文件查询与下载”下载音频。</li>
+                <li>查询结果里若出现输出文件 ID，可到“文件管理”下载；若直接返回音频 URL，页面会自动显示播放器。</li>
               </ul>
             </div>
             <details class="param-help" open>
               <summary>参数和值说明</summary>
               <table class="param-table">
-                <tr><th>model</th><td>长文本批量任务一般选 <code>speech-2.8-turbo</code> 控制速度和成本；精品内容可选 <code>speech-2.8-hd</code>。</td></tr>
+                <tr><th>model</th><td>长文本批量任务一般选 <code>speech-2.8-turbo</code> 控制速度和成本；精品内容可选 <code>speech-2.8-hd</code>；兼容项目可选 2.6 / 02 / 01 系列。</td></tr>
                 <tr><th>voice_id</th><td>目标音色 ID，和同步合成相同。复刻或设计完成后可把返回 ID 填到这里。</td></tr>
                 <tr><th>text</th><td>直接提交的长文本。若同时填写 <code>text_file_id</code>，页面会优先使用文件 ID 并移除 text。</td></tr>
                 <tr><th>text_file_id</th><td>通过文件上传接口以 <code>purpose=t2a_async_input</code> 上传文本后得到的文件 ID。</td></tr>
-                <tr><th>format</th><td><code>mp3</code> 适合分发和在线播放；<code>wav</code> 适合剪辑或后期处理。</td></tr>
+                <tr><th>format</th><td><code>mp3</code> 适合分发和在线播放；<code>wav</code>、<code>flac</code> 适合剪辑或后期处理；<code>pcm</code> 适合底层音频管线。</td></tr>
                 <tr><th>speed / vol / pitch</th><td>与同步合成一致，用于控制整段输出的语速、音量和音高。</td></tr>
-                <tr><th>sample_rate / bitrate</th><td>决定输出音频规格。长文本建议先用默认值验证，再按文件体积和音质要求调整。</td></tr>
-                <tr><th>language_boost</th><td>目标语言增强，例如中文填 <code>Chinese</code>。多语言文本可先留空或按主语言填写。</td></tr>
+                <tr><th>sample_rate / bitrate / channel</th><td>决定输出音频规格。长文本建议先用默认值验证，再按文件体积和音质要求调整。</td></tr>
+                <tr><th>language_boost</th><td>目标语言增强，例如中文填 <code>Chinese</code>，粤语填 <code>Chinese,Yue</code>。多语言文本可用 <code>auto</code> 或按主语言填写。</td></tr>
+                <tr><th>aigc_watermark / continuous_sound</th><td><code>aigc_watermark</code> 控制是否添加音频水印；<code>continuous_sound</code> 用于更连续的长文本音频输出。</td></tr>
               </table>
             </details>
             <div class="grid">
@@ -1037,6 +1062,10 @@
                   <option selected>speech-2.8-turbo</option>
                   <option>speech-2.6-hd</option>
                   <option>speech-2.6-turbo</option>
+                  <option>speech-02-hd</option>
+                  <option>speech-02-turbo</option>
+                  <option>speech-01-hd</option>
+                  <option>speech-01-turbo</option>
                 </select>
               </label>
               <label>voice_id
@@ -1049,6 +1078,8 @@
                 <select id="asyncFormat">
                   <option selected>mp3</option>
                   <option>wav</option>
+                  <option>flac</option>
+                  <option>pcm</option>
                 </select>
               </label>
               <label class="full">text
@@ -1079,9 +1110,19 @@
                   <option>256000</option>
                 </select>
               </label>
-              <label>language_boost
-                <input id="asyncLang" value="Chinese">
+              <label>channel
+                <select id="asyncChannel">
+                  <option selected>1</option>
+                  <option>2</option>
+                </select>
               </label>
+              <label>language_boost
+                <input id="asyncLang" value="auto" placeholder="Chinese / Chinese,Yue / English / auto">
+              </label>
+            </div>
+            <div class="checks">
+              <label><input id="asyncAigcWatermark" type="checkbox"> aigc_watermark</label>
+              <label><input id="asyncContinuousSound" type="checkbox"> continuous_sound</label>
             </div>
             <div class="actions">
               <button class="btn" data-run="asyncCreate">创建任务</button>
@@ -1121,6 +1162,7 @@
               <table class="param-table">
                 <tr><th>task_id</th><td>创建异步任务返回的任务 ID。只用于查询任务状态，不能当作文件 ID 下载。</td></tr>
                 <tr><th>成功状态</th><td>响应中若显示任务完成，继续找输出音频的 <code>file_id</code> 或类似结果字段。</td></tr>
+                <tr><th>返回音频</th><td>异步任务通常返回输出文件 ID；如果响应中直接包含 <code>audio_url</code>、<code>download_url</code>、<code>url</code> 或类似音频链接，页面会自动显示播放和下载按钮。</td></tr>
                 <tr><th>失败状态</th><td>查看响应里的错误码、错误信息和原请求 JSON，通常和文本过长、voice_id 无效、参数格式有关。</td></tr>
               </table>
             </details>
@@ -1137,6 +1179,7 @@
             <code class="endpoint" data-endpoint="asyncQuery"></code>
             <pre id="asyncQueryPreview"></pre>
             <pre id="asyncQueryResult" class="result">等待请求...</pre>
+            <div id="asyncQueryAudio" class="audio-box"></div>
           </div>
         </div>
       </section>
@@ -1156,7 +1199,7 @@
               <p>上传语音 API 需要的文件，并拿到后续接口使用的 <code>file_id</code>。</p>
               <ul>
                 <li><code>voice_clone</code>：上传待复刻的人声音频，用于音色快速复刻。</li>
-                <li><code>prompt_audio</code>：上传参考试听音频，用于辅助复刻效果。</li>
+                <li><code>prompt_audio</code>：上传参考试听音频，用于辅助复刻效果，时长需小于 8 秒。</li>
                 <li><code>t2a_async_input</code>：上传长文本文件，用于异步长文本语音合成。</li>
               </ul>
             </div>
@@ -1164,9 +1207,9 @@
               <summary>参数和值说明</summary>
               <table class="param-table">
                 <tr><th>purpose=voice_clone</th><td>上传待复刻人声音频。用于后续 <code>/v1/voice_clone</code> 的 <code>file_id</code>。</td></tr>
-                <tr><th>purpose=prompt_audio</th><td>上传参考音频，配合 <code>prompt_text</code> 作为复刻提示，可选。</td></tr>
+                <tr><th>purpose=prompt_audio</th><td>上传参考音频，配合 <code>prompt_text</code> 作为复刻提示，可选。官方要求时长小于 8 秒。</td></tr>
                 <tr><th>purpose=t2a_async_input</th><td>上传长文本文件，返回的 <code>file_id</code> 填到异步创建任务的 <code>text_file_id</code>。</td></tr>
-                <tr><th>file</th><td>复刻音频通常用 <code>mp3</code>、<code>m4a</code>、<code>wav</code>；长文本上传用文本文件。按文档限制控制大小和时长。</td></tr>
+                <tr><th>file</th><td><code>voice_clone</code> 主复刻音频需 10 秒到 5 分钟；<code>prompt_audio</code> 示例音频需小于 8 秒；音频格式通常用 <code>mp3</code>、<code>m4a</code>、<code>wav</code>。</td></tr>
                 <tr><th>返回值</th><td>重点看 <code>file_id</code>。页面会按 purpose 自动回填到复刻、参考音频、异步文本或文件查询区域。</td></tr>
               </table>
             </details>
@@ -1199,10 +1242,10 @@
       <section id="file-tools" class="api-section">
         <div class="section-head">
           <div>
-            <h2>文件查询与下载</h2>
-            <p>辅助异步合成结果下载，也可查看上传文件。包含 list / retrieve / retrieve_content。</p>
+            <h2>文件管理</h2>
+            <p>辅助异步合成结果下载，也可查看或删除文件。包含 list / retrieve / retrieve_content / delete。</p>
           </div>
-          <span class="method get">GET</span>
+          <span class="method get">GET/POST</span>
         </div>
         <div class="api-body">
           <div class="form-panel">
@@ -1210,20 +1253,21 @@
               <h3>使用说明</h3>
               <p>管理文件资产，并下载异步任务生成的音频文件。</p>
               <ul>
-                <li>“列出文件”按 <code>purpose</code> 查看文件；选择 <code>all</code> 时不加 purpose 参数。</li>
+                <li>“列出文件”按 <code>purpose</code> 查看文件，官方文档要求传入具体 purpose。</li>
                 <li>“查询文件”用于确认某个 <code>file_id</code> 的元数据。</li>
                 <li>“下载文件”会把返回内容转成下载链接；如果响应是音频类型，会显示播放器。</li>
+                <li>“删除文件”按官方示例使用 JSON，请求体包含当前 <code>purpose</code> 和 <code>file_id</code>。</li>
               </ul>
             </div>
             <details class="param-help">
               <summary>参数和值说明</summary>
               <table class="param-table">
-                <tr><th>purpose</th><td>筛选文件类型。<code>voice_clone</code>、<code>prompt_audio</code>、<code>t2a_async_input</code>、<code>t2a_async_output</code> 分别对应不同上传或生成来源。</td></tr>
-                <tr><th>purpose=all</th><td>页面会不带 purpose 参数请求列表，便于查看账号下文件概览。</td></tr>
+                <tr><th>purpose</th><td>筛选或删除文件类型。常用值为 <code>voice_clone</code>、<code>prompt_audio</code>、<code>t2a_async_input</code>；删除接口还支持官方列出的 <code>t2a_async</code>、<code>video_generation</code>。</td></tr>
                 <tr><th>file_id</th><td>查询或下载指定文件时必填。异步合成完成后拿到的输出文件 ID 应填在这里。</td></tr>
                 <tr><th>列出文件</th><td>用于找文件 ID 或核对文件类型，不下载文件内容。</td></tr>
                 <tr><th>查询文件</th><td>用于查看单个文件元数据，例如用途、大小、状态。</td></tr>
-                <tr><th>下载文件</th><td>用于获取文件二进制内容；音频类型会显示播放器和下载按钮。</td></tr>
+                <tr><th>下载文件</th><td>用于获取文件二进制内容；音频类型会显示播放器和下载按钮。如果接口返回的是可访问 URL，也会直接展示链接播放器。</td></tr>
+                <tr><th>删除文件</th><td>用于删除上传或生成的文件。页面会二次确认，避免误删。</td></tr>
               </table>
             </details>
             <div class="grid">
@@ -1232,8 +1276,8 @@
                   <option selected>voice_clone</option>
                   <option>prompt_audio</option>
                   <option>t2a_async_input</option>
-                  <option>t2a_async_output</option>
-                  <option>all</option>
+                  <option>t2a_async</option>
+                  <option>video_generation</option>
                 </select>
               </label>
               <label>file_id
@@ -1244,7 +1288,9 @@
               <button class="btn" data-run="fileList">列出文件</button>
               <button class="btn secondary" data-run="fileRetrieve">查询文件</button>
               <button class="btn secondary" data-run="fileDownload">下载文件</button>
+              <button class="btn warn" data-run="fileDelete">删除文件</button>
               <button class="btn secondary" data-copy="fileTools">复制 curl</button>
+              <button class="btn secondary" data-copy="fileDelete">复制删除 curl</button>
             </div>
           </div>
           <div class="result-panel">
@@ -1271,21 +1317,23 @@
               <p>用一段人声音频复刻出可复用的自定义音色。</p>
               <ul>
                 <li>先在“上传文件”选择 <code>voice_clone</code> 上传音频，成功后把 <code>file_id</code> 填到这里。</li>
-                <li><code>voice_id</code> 建议自己命名，便于后续合成和删除；为空时按接口行为处理。</li>
+                <li><code>voice_id</code> 为必填自定义 ID，便于后续合成和删除。</li>
                 <li>复刻成功后，返回的 Voice ID 可直接用于同步、异步语音合成。</li>
               </ul>
             </div>
             <details class="param-help" open>
               <summary>参数和值说明</summary>
               <table class="param-table">
-                <tr><th>file_id</th><td>必填。先用上传接口以 <code>purpose=voice_clone</code> 上传人声音频，拿返回的 <code>file_id</code>。</td></tr>
-                <tr><th>voice_id</th><td>自定义音色 ID。建议用项目名前缀加用途，例如 <code>demo_narrator_001</code>，方便查询和删除。</td></tr>
-                <tr><th>model</th><td>用于生成试听音频的语音模型。快速验证选 <code>speech-2.8-turbo</code>，质量优先选 <code>speech-2.8-hd</code>。</td></tr>
-                <tr><th>language_boost</th><td>音频主要语言。中文填 <code>Chinese</code>，英文填 <code>English</code>。</td></tr>
-                <tr><th>prompt_audio</th><td>可选参考音频文件 ID。需要先用上传接口选择 <code>prompt_audio</code> 上传。</td></tr>
+                <tr><th>file_id</th><td>必填 int64。先用上传接口以 <code>purpose=voice_clone</code> 上传人声音频，拿返回的 <code>file_id</code>。</td></tr>
+                <tr><th>voice_id</th><td>必填自定义音色 ID。官方要求 8-256 位、首字符为英文字母，只能包含数字/字母/<code>-</code>/<code>_</code>，且不能以 <code>-</code> 或 <code>_</code> 结尾。</td></tr>
+                <tr><th>model</th><td>传 <code>text</code> 生成试听音频时必填。快速验证选 <code>speech-2.8-turbo</code>，质量优先选 <code>speech-2.8-hd</code>；也可选 2.6 / 02 / 01 系列。</td></tr>
+                <tr><th>language_boost</th><td>音频主要语言。中文填 <code>Chinese</code>，粤语填 <code>Chinese,Yue</code>，英文填 <code>English</code>，不确定可用 <code>auto</code>。</td></tr>
+                <tr><th>prompt_audio</th><td>可选参考音频文件 ID。需要先用上传接口选择 <code>prompt_audio</code> 上传，官方要求示例音频时长小于 8 秒；若使用 <code>clone_prompt</code>，<code>prompt_audio</code> 和 <code>prompt_text</code> 要同时填写。</td></tr>
                 <tr><th>prompt_text</th><td>参考音频对应文本。使用 <code>prompt_audio</code> 时建议填写，帮助对齐发音内容。</td></tr>
                 <tr><th>text</th><td>复刻完成后生成试听音频的文本，不是复刻训练文本。</td></tr>
-                <tr><th>noise / volume</th><td><code>need_noise_reduction</code> 降噪；<code>need_volume_normalization</code> 音量归一。录音质量不稳定时建议开启。</td></tr>
+                <tr><th>返回音频</th><td>复刻成功后的试听音频可能以 hex 或 URL 形式返回。页面会识别 <code>audio</code>、<code>audio_file</code>、<code>trial_audio</code>、<code>audio_url</code>、<code>download_url</code> 等字段。</td></tr>
+                <tr><th>noise / volume</th><td><code>need_noise_reduction</code> 降噪；<code>need_volume_normalization</code> 音量归一。官方默认都是 <code>false</code>，录音质量不稳定时再开启。</td></tr>
+                <tr><th>aigc_watermark</th><td>中文官方文档列出该字段；页面默认不勾选，按 <code>false</code> 发送。</td></tr>
               </table>
             </details>
             <div class="grid">
@@ -1301,10 +1349,14 @@
                   <option>speech-2.8-hd</option>
                   <option>speech-2.6-turbo</option>
                   <option>speech-2.6-hd</option>
+                  <option>speech-02-turbo</option>
+                  <option>speech-02-hd</option>
+                  <option>speech-01-turbo</option>
+                  <option>speech-01-hd</option>
                 </select>
               </label>
               <label>language
-                <input id="cloneLanguage" value="Chinese">
+                <input id="cloneLanguage" value="auto" placeholder="Chinese / Chinese,Yue / English / auto">
               </label>
               <label>prompt_audio file_id
                 <input id="clonePromptAudio" placeholder="可选：上传 prompt_audio 返回的 file_id">
@@ -1317,8 +1369,9 @@
               </label>
             </div>
             <div class="checks">
-              <label><input id="cloneNeedNoiseReduction" type="checkbox" checked> need_noise_reduction</label>
-              <label><input id="cloneNeedVolumeNormalization" type="checkbox" checked> need_volume_normalization</label>
+              <label><input id="cloneNeedNoiseReduction" type="checkbox"> need_noise_reduction</label>
+              <label><input id="cloneNeedVolumeNormalization" type="checkbox"> need_volume_normalization</label>
+              <label><input id="cloneAigcWatermark" type="checkbox"> aigc_watermark</label>
             </div>
             <div class="actions">
               <button class="btn" data-run="voiceClone">发起复刻</button>
@@ -1357,24 +1410,16 @@
             <details class="param-help" open>
               <summary>参数和值说明</summary>
               <table class="param-table">
-                <tr><th>voice_id</th><td>可选自定义音色 ID。留空时按接口默认行为生成；填写时建议用业务前缀，避免和已有 ID 冲突。</td></tr>
-                <tr><th>model</th><td>用于生成试听音频。<code>speech-2.8-turbo</code> 更快，<code>speech-2.8-hd</code> 更适合评估音质。</td></tr>
+                <tr><th>voice_id</th><td>可选自定义音色 ID。填写时建议用业务前缀，避免和已有 ID 冲突；规则与复刻音色 ID 一致。</td></tr>
                 <tr><th>prompt</th><td>音色描述。建议包含性别、年龄、语言、情绪、语速、使用场景，例如“年轻女性、中文、亲切、客服播报”。</td></tr>
-                <tr><th>preview_text</th><td>试听文本。用真实业务句子更容易判断音色是否适合，不要只填很短的词。</td></tr>
-                <tr><th>返回值</th><td>重点看 Voice ID 和试听音频。满意后把 Voice ID 填到合成接口的 <code>voice_id</code>。</td></tr>
+                <tr><th>preview_text</th><td>试听文本，官方限制 500 字符内。用真实业务句子更容易判断音色是否适合。</td></tr>
+                <tr><th>aigc_watermark</th><td>中文官方文档列出该字段；页面默认不勾选，按 <code>false</code> 发送。</td></tr>
+                <tr><th>返回值</th><td>重点看 Voice ID 和试听音频。试听音频可能是 hex 或 URL，页面会自动播放并提供下载；满意后把 Voice ID 填到合成接口的 <code>voice_id</code>。</td></tr>
               </table>
             </details>
             <div class="grid">
               <label>voice_id
                 <input id="designVoiceId" placeholder="可选：自定义 Voice ID">
-              </label>
-              <label>model
-                <select id="designModel">
-                  <option selected>speech-2.8-turbo</option>
-                  <option>speech-2.8-hd</option>
-                  <option>speech-2.6-turbo</option>
-                  <option>speech-2.6-hd</option>
-                </select>
               </label>
               <label class="full">prompt
                 <textarea id="designPrompt">一个温和、清晰、适合产品介绍的年轻男性中文声音。</textarea>
@@ -1382,6 +1427,9 @@
               <label class="full">preview_text
                 <textarea id="designPreviewText">欢迎使用 MiniMax 音色设计 API。</textarea>
               </label>
+            </div>
+            <div class="checks">
+              <label><input id="designAigcWatermark" type="checkbox"> aigc_watermark</label>
             </div>
             <div class="actions">
               <button class="btn" data-run="voiceDesign">生成音色</button>
@@ -1507,6 +1555,8 @@
         <a href="https://platform.minimaxi.com/docs/api-reference/speech-t2a-http" target="_blank" rel="noopener">同步合成 HTTP</a>、
         <a href="https://platform.minimaxi.com/docs/guides/speech-t2a-websocket" target="_blank" rel="noopener">WebSocket 合成</a>、
         <a href="https://platform.minimaxi.com/docs/guides/speech-t2a-async" target="_blank" rel="noopener">异步合成</a>、
+        <a href="https://platform.minimaxi.com/docs/api-reference/file-management-upload" target="_blank" rel="noopener">文件管理</a>、
+        <a href="https://platform.minimaxi.com/docs/api-reference/voice-cloning-clone" target="_blank" rel="noopener">音色复刻</a>、
         <a href="https://platform.minimaxi.com/docs/api-reference/voice-design-design" target="_blank" rel="noopener">音色设计</a>。
       </footer>
     </main>
@@ -1523,6 +1573,7 @@
       fileList: { method: "GET", path: "/v1/files/list" },
       fileRetrieve: { method: "GET", path: "/v1/files/retrieve" },
       fileDownload: { method: "GET", path: "/v1/files/retrieve_content" },
+      fileDelete: { method: "POST", path: "/v1/files/delete" },
       voiceClone: { method: "POST", path: "/v1/voice_clone" },
       voiceDesign: { method: "POST", path: "/v1/voice_design" },
       voiceList: { method: "POST", path: "/v1/get_voice" },
@@ -1538,13 +1589,17 @@
           stream: checked("t2aStream"),
           language_boost: value("t2aLang"),
           subtitle_enable: checked("t2aSubtitle"),
-          output_format: "hex",
+          aigc_watermark: checked("t2aAigcWatermark"),
+          force_cbr: checked("t2aForceCbr"),
+          output_format: checked("t2aStream") ? "hex" : value("t2aOutputFormat"),
           voice_setting: clean({
             voice_id: value("t2aVoice"),
             speed: number("t2aSpeed"),
             vol: number("t2aVol"),
             pitch: number("t2aPitch"),
-            emotion: value("t2aEmotion")
+            emotion: value("t2aEmotion"),
+            text_normalization: checked("t2aTextNormalization"),
+            latex_read: checked("t2aLatexRead")
           }),
           audio_setting: clean({
             sample_rate: number("t2aSampleRate"),
@@ -1561,12 +1616,15 @@
         const body = clean({
           model: value("asyncModel"),
           text: value("asyncText"),
-          text_file_id: value("asyncFileId"),
+          text_file_id: numberOrString("asyncFileId"),
           language_boost: value("asyncLang"),
+          aigc_watermark: checked("asyncAigcWatermark"),
+          continuous_sound: checked("asyncContinuousSound"),
           audio_setting: clean({
             audio_sample_rate: number("asyncSampleRate"),
             bitrate: number("asyncBitrate"),
-            format: value("asyncFormat")
+            format: value("asyncFormat"),
+            channel: number("asyncChannel")
           }),
           voice_setting: clean({
             voice_id: value("asyncVoice"),
@@ -1603,7 +1661,7 @@
 
       fileList() {
         const purpose = value("filePurpose");
-        return queryRequest("fileList", purpose === "all" ? {} : { purpose });
+        return queryRequest("fileList", { purpose });
       },
 
       fileRetrieve() {
@@ -1614,9 +1672,16 @@
         return queryRequest("fileDownload", { file_id: value("fileId") });
       },
 
+      fileDelete() {
+        return jsonRequest("fileDelete", clean({
+          purpose: value("filePurpose"),
+          file_id: numberOrString("fileId")
+        }));
+      },
+
       voiceClone() {
         return jsonRequest("voiceClone", clean({
-          file_id: value("cloneFileId"),
+          file_id: numberOrString("cloneFileId"),
           voice_id: value("cloneVoiceId"),
           model: value("cloneModel"),
           language_boost: value("cloneLanguage"),
@@ -1627,16 +1692,16 @@
           }),
           need_noise_reduction: checked("cloneNeedNoiseReduction"),
           need_volume_normalization: checked("cloneNeedVolumeNormalization"),
-          aigc_watermark: false
+          aigc_watermark: checked("cloneAigcWatermark")
         }));
       },
 
       voiceDesign() {
         return jsonRequest("voiceDesign", clean({
-          model: value("designModel"),
           voice_id: value("designVoiceId"),
           prompt: value("designPrompt"),
-          preview_text: value("designPreviewText")
+          preview_text: value("designPreviewText"),
+          aigc_watermark: checked("designAigcWatermark")
         }));
       },
 
@@ -1655,6 +1720,7 @@
         const start = clean({
           event: "task_start",
           model: value("wsModel"),
+          language_boost: value("wsLang"),
           voice_setting: clean({ voice_id: value("wsVoice"), speed: 1, vol: 1, pitch: 0 }),
           audio_setting: clean({ format: value("wsFormat"), sample_rate: 32000, bitrate: 128000, channel: 1 })
         });
@@ -1761,9 +1827,10 @@
       clearAudio(req.key);
       refreshPreview(name);
 
-      if (req.key === "voiceDelete") {
-        const id = value("deleteVoiceId");
-        if (!id || !confirm(`确认删除音色 ${id}？此操作不可恢复。`)) {
+      if (req.key === "voiceDelete" || req.key === "fileDelete") {
+        const id = req.key === "voiceDelete" ? value("deleteVoiceId") : value("fileId");
+        const label = req.key === "voiceDelete" ? "音色" : "文件";
+        if (!id || !confirm(`确认删除${label} ${id}？此操作不可恢复。`)) {
           setText(resultId, "已取消删除。");
           return;
         }
@@ -1831,34 +1898,80 @@
     function maybeRenderAudio(key, payload) {
       const data = typeof payload === "string" ? tryJson(payload) : payload;
       if (!data || typeof data !== "object") return;
-      const audioHex = findFirst(data, ["audio", "audio_file", "trial_audio", "demo_audio"]);
-      const audioUrl = findFirst(data, ["audio_url", "demo_audio_url", "url", "download_url"]);
-      const format = findFirst(data, ["format"]) || inferFormatFromForm(key) || "mp3";
-      const boxId = key === "voiceDesign" ? "voiceDesignAudio" : key === "voiceClone" ? "voiceCloneAudio" : key === "t2aHttp" ? "t2aHttpAudio" : "";
+      const audioNames = ["audio", "audio_file", "audio_url", "trial_audio", "demo_audio", "demo_audio_url", "download_url", "file_url", "url"];
+      const audioValue = findFirstMatching(data, audioNames, isPlayableAudioValue);
+      const format = inferFormatFromValue(audioValue) || findFirst(data, ["format"]) || inferFormatFromForm(key) || "mp3";
+      const boxId = audioBoxIdFor(key);
       if (!boxId) return;
       const box = $(boxId);
       box.innerHTML = "";
 
-      if (typeof audioHex === "string" && /^[0-9a-fA-F]+$/.test(audioHex.slice(0, 80))) {
-        const blob = hexToBlob(audioHex, audioMime(format));
+      if (isHexAudio(audioValue)) {
+        const blob = hexToBlob(audioValue, audioMime(format));
         const url = URL.createObjectURL(blob);
         appendAudio(box, url, `minimax-audio.${format}`);
-      } else if (typeof audioUrl === "string" && /^https?:\/\//.test(audioUrl)) {
-        appendAudio(box, audioUrl, `minimax-audio.${format}`);
+      } else if (isAudioUrl(audioValue)) {
+        appendAudio(box, audioValue, `minimax-audio.${format}`, true);
       }
     }
 
-    function appendAudio(box, url, filename) {
+    function appendAudio(box, url, filename, remote = false) {
       const audio = document.createElement("audio");
       audio.controls = true;
       audio.src = url;
+      box.appendChild(audio);
+      if (remote) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn secondary";
+        button.textContent = "下载音频";
+        button.addEventListener("click", () => downloadRemoteAudio(url, filename, button));
+        box.appendChild(button);
+
+        const open = document.createElement("a");
+        open.href = url;
+        open.target = "_blank";
+        open.rel = "noopener";
+        open.className = "btn secondary";
+        open.textContent = "打开音频链接";
+        box.appendChild(open);
+      } else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.className = "btn secondary";
+        link.textContent = "下载音频";
+        box.appendChild(link);
+      }
+    }
+
+    async function downloadRemoteAudio(url, filename, button) {
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "下载中...";
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        triggerDownload(objectUrl, filename);
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+      } catch (error) {
+        toast(`无法直接下载：${error.message}，请用打开音频链接`);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    function triggerDownload(url, filename) {
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
-      link.className = "btn secondary";
-      link.textContent = "下载音频";
-      box.appendChild(audio);
-      box.appendChild(link);
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
 
     function hexToBlob(hex, mime) {
@@ -1872,8 +1985,47 @@
 
     function audioMime(format) {
       if (format === "wav") return "audio/wav";
+      if (format === "flac") return "audio/flac";
       if (format === "pcm") return "application/octet-stream";
       return "audio/mpeg";
+    }
+
+    function audioBoxIdFor(key) {
+      const ids = {
+        t2aHttp: "t2aHttpAudio",
+        asyncQuery: "asyncQueryAudio",
+        voiceClone: "voiceCloneAudio",
+        voiceDesign: "voiceDesignAudio"
+      };
+      return ids[key] || "";
+    }
+
+    function isPlayableAudioValue(value) {
+      return isHexAudio(value) || isAudioUrl(value);
+    }
+
+    function isHexAudio(value) {
+      return typeof value === "string" && value.length > 80 && /^[0-9a-fA-F]+$/.test(value);
+    }
+
+    function isAudioUrl(value) {
+      if (typeof value !== "string") return false;
+      try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+    function inferFormatFromValue(value) {
+      if (!isAudioUrl(value)) return "";
+      try {
+        const ext = new URL(value).pathname.split(".").pop().toLowerCase();
+        return ["mp3", "wav", "flac", "pcm"].includes(ext) ? ext : "";
+      } catch {
+        return "";
+      }
     }
 
     function inferFormatFromForm(key) {
@@ -1892,6 +2044,23 @@
         seen.add(cur);
         for (const name of names) {
           if (Object.prototype.hasOwnProperty.call(cur, name) && cur[name]) return cur[name];
+        }
+        for (const val of Object.values(cur)) {
+          if (val && typeof val === "object") stack.push(val);
+        }
+      }
+      return undefined;
+    }
+
+    function findFirstMatching(obj, names, predicate) {
+      const stack = [obj];
+      const seen = new Set();
+      while (stack.length) {
+        const cur = stack.pop();
+        if (!cur || typeof cur !== "object" || seen.has(cur)) continue;
+        seen.add(cur);
+        for (const name of names) {
+          if (Object.prototype.hasOwnProperty.call(cur, name) && predicate(cur[name])) return cur[name];
         }
         for (const val of Object.values(cur)) {
           if (val && typeof val === "object") stack.push(val);
@@ -1922,13 +2091,14 @@
     }
 
     function resultIdFor(key) {
-      if (key === "fileList" || key === "fileRetrieve" || key === "fileDownload") return "fileToolsResult";
+      if (key === "fileList" || key === "fileRetrieve" || key === "fileDownload" || key === "fileDelete") return "fileToolsResult";
       return `${key}Result`;
     }
 
     function clearAudio(key) {
       const ids = {
         t2aHttp: "t2aHttpAudio",
+        asyncQuery: "asyncQueryAudio",
         voiceClone: "voiceCloneAudio",
         voiceDesign: "voiceDesignAudio",
         fileDownload: "fileDownloadBox"
@@ -1979,12 +2149,12 @@
     }
 
     function previewIdFor(key) {
-      if (key === "fileList" || key === "fileRetrieve" || key === "fileDownload") return "fileToolsPreview";
+      if (key === "fileList" || key === "fileRetrieve" || key === "fileDownload" || key === "fileDelete") return "fileToolsPreview";
       return `${key}Preview`;
     }
 
     function setEndpoint(key, url) {
-      const directKey = key === "fileList" || key === "fileRetrieve" || key === "fileDownload" ? "fileTools" : key;
+      const directKey = key === "fileList" || key === "fileRetrieve" || key === "fileDownload" || key === "fileDelete" ? "fileTools" : key;
       const el = document.querySelector(`[data-endpoint="${directKey}"]`);
       if (el) el.textContent = url;
     }
@@ -2001,6 +2171,11 @@
           `  -F "purpose=${value("uploadPurpose")}"`,
           `  -F "file=@/path/to/file"`
         ].join(" \\\n");
+      }
+      if (name === "fileDelete") {
+        const headers = [`-H "Authorization: Bearer <API_KEY>"`, `-H "Content-Type: application/json"`];
+        const body = req.init?.body ? ` \\\n  -d '${req.init.body.replaceAll("'", "'\\''")}'` : "";
+        return [`curl -X POST "${req.url}"`, ...headers.map((h) => `  ${h}`)].join(" \\\n") + body;
       }
       const headers = [`-H "Authorization: Bearer <API_KEY>"`];
       if (req.init?.headers?.["Content-Type"]) headers.push(`-H "Content-Type: application/json"`);
